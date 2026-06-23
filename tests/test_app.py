@@ -1,9 +1,22 @@
 from fastapi.testclient import TestClient
+import pytest
 
 from app.main import app
 
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def mock_ai(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.service.extract_memories", lambda message: [])
+    monkeypatch.setattr(
+        "app.service.generate_reply",
+        lambda sender_id, message, recent_chat, memory: (
+            "Hi, ako si Tito Marlon. Naka-receive ako ng message mo. "
+            "Inaayos pa ang full AI memory ko, pero nandito ako para tumulong."
+        ),
+    )
 
 
 def test_health() -> None:
