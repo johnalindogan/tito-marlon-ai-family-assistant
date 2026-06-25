@@ -73,3 +73,11 @@
 - [x] Include identified family profile in AI context
 - [x] Return identified family member metadata from `/message`
 - [x] Add scripts to list recent sender IDs and link family members
+
+## Phase I — Messenger Profile Lookup
+
+- [x] Add `messenger_contacts` profile cache
+- [x] Accept optional `messenger_profile` in `/message`
+- [x] Auto-link exact family name matches
+- [x] Personalize non-family contacts with first name only
+- [x] Document n8n Meta profile lookup payload

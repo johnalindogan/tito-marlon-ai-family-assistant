@@ -20,7 +20,7 @@ def mock_ai(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("app.service.extract_memories", lambda message: [])
     monkeypatch.setattr(
         "app.service.generate_reply",
-        lambda sender_id, message, image_urls, family_member, recent_chat, memory: (
+        lambda sender_id, message, image_urls, family_member, messenger_contact, recent_chat, memory: (
             "Hi, ako si Tito Marlon. Naka-receive ako ng message mo. "
             "Inaayos pa ang full AI memory ko, pero nandito ako para tumulong."
         ),
@@ -46,7 +46,27 @@ def test_message_returns_fallback_reply() -> None:
     assert body["memories_saved"] == []
     assert body["outbound_image_urls"] == []
     assert body["identified_family_member"] is None
+    assert body["messenger_contact"] is None
     assert "Tito Marlon" in body["reply"]
+
+
+def test_message_accepts_messenger_profile() -> None:
+    response = client.post(
+        "/message",
+        json={
+            "sender_id": "sender-1",
+            "message": "Kumusta?",
+            "messenger_profile": {
+                "first_name": "Juan",
+                "last_name": "Dela Cruz",
+                "profile_pic": "https://example.com/profile.jpg",
+                "locale": "en_US",
+                "timezone": 8,
+            },
+        },
+    )
+
+    assert response.status_code == 200
 
 
 def test_message_rejects_blank_text() -> None:
@@ -125,3 +145,38 @@ def test_family_member_context_formatting() -> None:
 
     assert "Papa Nelon" in context
     assert "Do not ask this person who they are" in context
+
+
+def test_messenger_contact_context_formatting() -> None:
+    from app.ai import _format_messenger_contact
+
+    context = _format_messenger_contact(
+        {
+            "sender_id": "sender-1",
+            "first_name": "Juan",
+            "last_name": "Dela Cruz",
+            "profile_pic": "https://example.com/profile.jpg",
+            "locale": "en_US",
+            "timezone": 8,
+            "family_member_key": None,
+        }
+    )
+
+    assert "Juan Dela Cruz" in context
+    assert "do not call them a family role" in context
+
+
+def test_messenger_profile_rejects_invalid_profile_pic() -> None:
+    response = client.post(
+        "/message",
+        json={
+            "sender_id": "sender-1",
+            "message": "Kumusta?",
+            "messenger_profile": {
+                "first_name": "Juan",
+                "profile_pic": "not-a-url",
+            },
+        },
+    )
+
+    assert response.status_code == 422

@@ -1,7 +1,7 @@
 from app import database
 from app.ai import extract_memories, generate_reply
 from app.outbound_images import outbound_image_urls_for_message
-from app.schemas import FamilyMemberProfile, MessageRequest, MessageResponse
+from app.schemas import FamilyMemberProfile, MessageRequest, MessageResponse, MessengerContactProfile
 
 
 def process_message(payload: MessageRequest) -> MessageResponse:
@@ -13,9 +13,27 @@ def process_message(payload: MessageRequest) -> MessageResponse:
 
     with database.session_scope() as session:
         family_member = None
+        messenger_contact = None
         memory_identity_id = payload.sender_id
         if session is not None:
-            family_member = database.load_family_member_by_sender_id(session, payload.sender_id)
+            if payload.messenger_profile is not None:
+                messenger_contact = database.upsert_messenger_contact(
+                    session,
+                    payload.sender_id,
+                    payload.messenger_profile.model_dump(),
+                )
+            else:
+                messenger_contact = database.load_messenger_contact(session, payload.sender_id)
+
+            family_member_key = (
+                str(messenger_contact["family_member_key"])
+                if messenger_contact and messenger_contact.get("family_member_key")
+                else None
+            )
+            if family_member_key:
+                family_member = database.load_family_member_by_key(session, family_member_key)
+            if family_member is None:
+                family_member = database.load_family_member_by_sender_id(session, payload.sender_id)
             if family_member is not None:
                 memory_identity_id = str(family_member["member_key"])
 
@@ -33,12 +51,14 @@ def process_message(payload: MessageRequest) -> MessageResponse:
             recent_chat = []
             memory = {}
             family_member = None
+            messenger_contact = None
 
         reply = generate_reply(
             payload.sender_id,
             payload.message,
             payload.image_urls,
             family_member,
+            messenger_contact,
             recent_chat,
             memory,
         )
@@ -52,5 +72,10 @@ def process_message(payload: MessageRequest) -> MessageResponse:
         outbound_image_urls=outbound_image_urls,
         identified_family_member=(
             FamilyMemberProfile.model_validate(family_member) if family_member is not None else None
+        ),
+        messenger_contact=(
+            MessengerContactProfile.model_validate(messenger_contact)
+            if messenger_contact is not None
+            else None
         ),
     )

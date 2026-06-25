@@ -22,7 +22,14 @@ Request:
 {
   "sender_id": "26741790695498132",
   "message": "Ano ang paborito kong pagkain?",
-  "image_urls": []
+  "image_urls": [],
+  "messenger_profile": {
+    "first_name": "Nelon",
+    "last_name": "Alindogan",
+    "profile_pic": "https://example.com/profile.jpg",
+    "locale": "en_US",
+    "timezone": 8
+  }
 }
 ```
 
@@ -43,11 +50,22 @@ Response:
     "relationship_label": "Papa Nelon / Grandpa Nelon",
     "aliases": ["Papa Nelon", "Grandpa Nelon", "Granpa Nelon", "Nelon"],
     "facebook_url": "https://www.facebook.com/leaderalindogan"
+  },
+  "messenger_contact": {
+    "sender_id": "26741790695498132",
+    "first_name": "Nelon",
+    "last_name": "Alindogan",
+    "profile_pic": "https://example.com/profile.jpg",
+    "locale": "en_US",
+    "timezone": 8,
+    "family_member_key": "nelon_alindogan"
   }
 }
 ```
 
-`identified_family_member` is `null` until the Messenger `sender_id` has been linked to a seeded family member.
+`messenger_profile` is optional. When supplied by n8n from Meta's profile lookup, the backend caches it in `messenger_contacts`.
+
+`identified_family_member` is `null` until the Messenger contact exact-name matches a seeded family member or is manually linked.
 
 ## Error Handling
 

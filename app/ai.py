@@ -53,6 +53,7 @@ def generate_reply(
     message: str,
     image_urls: list[str],
     family_member: dict[str, object] | None,
+    messenger_contact: dict[str, object] | None,
     recent_chat: list[dict[str, str]],
     memory: dict[str, str],
 ) -> str:
@@ -64,6 +65,7 @@ def generate_reply(
     context = (
         f"Messenger sender_id: {sender_id}\n\n"
         f"Identified family member:\n{_format_family_member(family_member)}\n\n"
+        f"Messenger contact:\n{_format_messenger_contact(messenger_contact)}\n\n"
         f"Saved family memory:\n{format_memory(memory)}"
     )
 
@@ -134,6 +136,23 @@ def _format_family_member(family_member: dict[str, object] | None) -> str:
         f"- relationship_label: {family_member['relationship_label']}\n"
         f"- aliases: {aliases_text}\n"
         "Use the preferred name naturally when it fits. Do not ask this person who they are."
+    )
+
+
+def _format_messenger_contact(messenger_contact: dict[str, object] | None) -> str:
+    if messenger_contact is None:
+        return "No Messenger profile lookup data available."
+
+    first_name = str(messenger_contact.get("first_name") or "").strip()
+    last_name = str(messenger_contact.get("last_name") or "").strip()
+    full_name = f"{first_name} {last_name}".strip() or "Unknown"
+    family_member_key = messenger_contact.get("family_member_key") or "None"
+    return (
+        f"- name: {full_name}\n"
+        f"- first_name: {first_name or 'Unknown'}\n"
+        f"- family_member_key: {family_member_key}\n"
+        "If this contact is not a linked family member, you may use their first name naturally, "
+        "but do not call them a family role."
     )
 
 

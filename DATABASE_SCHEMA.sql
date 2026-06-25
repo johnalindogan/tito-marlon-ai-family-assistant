@@ -64,3 +64,16 @@ VALUES
 ('<MESSENGER_SENDER_ID>', 'current_clothing', 'white polo shirt')
 ON CONFLICT (sender_id, memory_key)
 DO UPDATE SET memory_value = EXCLUDED.memory_value, updated_at = now();
+
+CREATE TABLE IF NOT EXISTS messenger_contacts (
+  sender_id TEXT PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  profile_pic TEXT,
+  locale TEXT,
+  timezone INTEGER,
+  family_member_key TEXT REFERENCES family_members(member_key),
+  first_seen_at TIMESTAMPTZ DEFAULT now(),
+  last_seen_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);

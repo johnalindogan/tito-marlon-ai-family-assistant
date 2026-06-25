@@ -24,6 +24,7 @@ The following are already working:
 - `chat_messages` table exists
 - `family_memory` table exists
 - `family_members` table exists with initial Alindogan family member profiles
+- `messenger_contacts` table exists for cached Meta profile lookup results
 - Permanent memory can be manually inserted and read
 
 ## Current Pain Point
@@ -194,12 +195,14 @@ Current backend status:
 - `/message` saves user and assistant chat rows when `DATABASE_URL` is configured and the schema exists.
 - `/message` extracts memories and generates replies with OpenAI when `OPENAI_API_KEY` is configured.
 - `/message` can download image URLs and pass them to OpenAI for visual understanding.
-- `/message` identifies linked family members by Messenger sender ID and customizes replies with their preferred family name.
+- `/message` caches Messenger profile lookup data, auto-links exact family name matches, and customizes replies with the family preferred name or contact first name.
 - `/message` returns a safe fallback reply when OpenAI is not configured or fails.
 
 ## Family Member Identity
 
-Messenger sends a page-scoped `sender_id`, not the public Facebook profile URL. The initial family profile list is seeded in the database, then each real Messenger sender ID should be linked once after that person messages the page.
+Messenger sends a page-scoped `sender_id`, not the public Facebook profile URL. n8n should look up the sender's Messenger profile through Meta and pass it to `/message` as `messenger_profile`.
+
+When the profile's normalized `first_name + last_name` exactly matches a seeded `family_members.full_name`, the backend auto-links that sender to the family member. Non-family friends are cached in `messenger_contacts` and Tito Marlon may use their first name without assigning a family role.
 
 List recent Messenger sender IDs:
 
@@ -212,6 +215,8 @@ Link a sender ID to a family profile:
 ```bash
 python scripts/link_family_member.py nelon_alindogan <MESSENGER_SENDER_ID>
 ```
+
+Manual linking is only needed if Meta's profile name does not exactly match the seeded family member name.
 
 Seeded `member_key` values:
 
