@@ -153,6 +153,41 @@ Use the same JSON-safe expression pattern:
 }) }}
 ```
 
+If there are multiple image attachment nodes, guard every optional image slot before
+sending it. Image 2 must check `length > 1`, and image 3 must check `length > 2`.
+Otherwise the workflow can fail by trying to send an undefined URL.
+
+## John Escalation Node
+
+When `/message` returns `escalation_request`, n8n should notify John with a separate
+Facebook Send API call. Branch this directly from `Tito Marlon Backend`, not after the
+image-send chain, so John is notified even if a later media node has an issue.
+
+Condition:
+
+```javascript
+{{ String(!!$('Tito Marlon Backend').item.json.escalation_request) }}
+```
+
+Message body:
+
+```javascript
+={{ JSON.stringify({
+  recipient: {
+    id: '<JOHN_MESSENGER_SENDER_ID>'
+  },
+  message: {
+    text: [
+      'Tito Marlon escalation',
+      `Reason: ${$('Tito Marlon Backend').item.json.escalation_request.reason}`,
+      `Urgency: ${$('Tito Marlon Backend').item.json.escalation_request.urgency}`,
+      `Summary: ${$('Tito Marlon Backend').item.json.escalation_request.summary}`,
+      `Suggested action: ${$('Tito Marlon Backend').item.json.escalation_request.suggested_action}`
+    ].join('\n')
+  }
+}) }}
+```
+
 ## Important
 
 The Facebook Page Access Token must stay in n8n credentials or environment variables, not in GitHub.

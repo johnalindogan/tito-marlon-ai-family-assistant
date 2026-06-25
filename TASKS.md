@@ -90,5 +90,6 @@
 - [x] Preserve current `outbound_image_urls` for n8n Messenger image nodes
 - [x] Add optional OpenAI image generation and Cloudflare R2 upload integration points
 - [ ] Configure Cloudflare R2 credentials and public media base URL
-- [ ] Add n8n John notification path for `escalation_request`
+- [x] Add n8n John notification path for `escalation_request`
+- [x] Guard n8n image attachment nodes so missing image #2/#3 cannot fail the workflow
 - [ ] Run 10-15 scripted parent-demo scenarios end-to-end in Messenger
