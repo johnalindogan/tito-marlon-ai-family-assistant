@@ -20,6 +20,8 @@ This became hard to debug.
 ```text
 Webhook POST /webhook/messenger
   ↓
+Immediate 200 OK to Meta
+  ↓
 IF not echo
   ↓
 HTTP Request: POST Tito Marlon Backend /message
@@ -40,6 +42,15 @@ Condition:
 ```
 
 Only continue for real user messages.
+
+## Webhook Response Mode
+
+The Messenger webhook must acknowledge Meta immediately. Configure the Webhook node
+with `responseMode: onReceived` and HTTP `200`.
+
+Do not wait until after OpenAI, Facebook Send API, or image attachment sends to respond
+to the webhook. Waiting until the end can cause Meta retries, duplicate replies, delayed
+replies, or messages that appear skipped.
 
 ## Backend Request Node
 
