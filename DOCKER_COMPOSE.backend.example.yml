@@ -1,0 +1,15 @@
+services:
+  titomarlon-api:
+    build: .
+    container_name: titomarlon-api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+# Existing external containers already running:
+# - n8n on port 5678
+# - postgres on port 5432
+#
+# This compose file assumes PostgreSQL is already running separately.
